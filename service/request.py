@@ -7,10 +7,10 @@ import html
 import re
 import os
 
-openai.api_type = os.environ.get('OPENAI_API_TYPE')
-openai.api_base = os.environ.get('OPENAI_API_BASE')
-openai.api_version = os.environ.get('OPENAI_API_VERSION')
-openai.api_key = os.environ.get('OPENAI_API_KEY')
+openai.api_type = "azure"
+openai.api_base = "https://my-special-bot.openai.azure.com/"
+openai.api_version = "2022-12-01"
+openai.api_key = "13fb374ac62d435985810e1245d5e98e"
 
 try:
     chat_history = []
@@ -18,14 +18,14 @@ try:
         user_input = input(">> ")
         response = openai.Completion.create(
             engine="my-gpt3-model",
-            prompt="User: "+user_input+" \nAI: \n",
-            temperature=0.9,
+            prompt="I want you to act as a linux terminal.I will type commands and you will reply with what the terminal should show. I want you to only reply with the terminal output inside one unique code block, and nothing else. do not write explanations. do not type commands unless instruct you to do so. when I need to tell you something in english, i will do so by putting text inside curly brackets {like this}. my first command is pwd. Command: "+user_input+" \nYou: \n",
+            temperature=0.7,
             max_tokens=int(4e3),
             # top_p=1,
             # frequency_penalty=0,
             # presence_penalty=0,
-            stop=["User: ", "AI: ", "<|im_end|>"],
-            timeout=300,
+            stop=["Command: ", "You: ", "Task", "<|im_end|>"],
+            timeout=120,
             n=1
         )
         message = response['choices'][0]['text']
