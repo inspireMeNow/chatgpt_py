@@ -11,8 +11,8 @@ from chatgpt_py.service.init_config import *
 from chatgpt_py.service.prompt import change_style
 import traceback
 
-config_azure_file = os.getenv('HOME')+'/.config/chatgpt-py/config_azure.json'
-config_openai_file = os.getenv('HOME')+'/.config/chatgpt-py/config_openai.json'
+config_azure_file = check_system()+"/config_azure.json"
+config_openai_file = check_system()+'/config_openai.json'
 
 
 def main():

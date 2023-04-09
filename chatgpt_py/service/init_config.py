@@ -1,10 +1,15 @@
 import os
 import openai
 import json
+import platform
 
-config_azure_file = os.getenv('HOME')+'/.config/chatgpt-py/config_azure.json'
-config_openai_file = os.getenv('HOME')+'/.config/chatgpt-py/config_openai.json'
 
+
+def check_system():
+    if platform.system() == 'Windows':
+        return os.getenv('HOMEPATH')+'\\.config\\chatgpt-py'
+    else:
+        return os.getenv('HOME')+'/.config/chatgpt-py'
 
 def init_azure(config_azure_file):
     if not os.path.exists(config_azure_file):
