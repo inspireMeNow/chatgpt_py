@@ -7,10 +7,37 @@ import html
 import re
 import os
 
-openai.api_type = "azure"
-openai.api_base = "https://my-special-bot.openai.azure.com/"
-openai.api_version = "2022-12-01"
-openai.api_key = "13fb374ac62d435985810e1245d5e98e"
+config_file = os.getenv('HOME')+'/.config/chatgpt-py/config.json'
+
+
+def init(config_file):
+    if not os.path.exists(config_file):
+        api_type = input("api_type: ")
+        api_base = input("api_base: ")
+        api_version = input("api_version: ")
+        api_key = input("api_key: ")
+        config = {
+            "api_type": api_type,
+            "api_base": api_base,
+            "api_version": api_version,
+            "api_key": api_key
+        }
+        with open(config_file, 'w') as f:
+            f.write(json.dumps(config))
+
+
+init(config_file)
+with open(config_file, 'r') as f:
+    try:
+        config = json.load(f)
+    except ValueError or TypeError:
+        print("Invalid json, please input your azure openai service config and try again.")
+        init(config_file)
+
+openai.api_type = config['api_type']
+openai.api_base = config['api_base']
+openai.api_version = config['api_version']
+openai.api_key = config['api_key']
 
 try:
     chat_history = []
