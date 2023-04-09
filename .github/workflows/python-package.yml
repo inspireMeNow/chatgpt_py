@@ -18,7 +18,7 @@ jobs:
   deploy:
 
     runs-on: ubuntu-latest
-
+    permissions: write-all
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
@@ -39,7 +39,6 @@ jobs:
     - name: Create Draft Release
       id: create_release
       uses: actions/create-release@v1
-      permissions: write-all
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
