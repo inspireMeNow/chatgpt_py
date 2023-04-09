@@ -6,8 +6,84 @@ from bs4 import BeautifulSoup
 import html
 import re
 import os
+import atexit
+import tty
+import termios
+from itertools import zip_longest
+from prompt import change_style
 
 config_file = os.getenv('HOME')+'/.config/chatgpt-py/config.json'
+
+
+class KeyGetter:
+    def arm(self):
+        self.old_term = termios.tcgetattr(sys.stdin)
+        tty.setcbreak(sys.stdin)
+
+        atexit.register(self.disarm)
+
+    def disarm(self):
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.old_term)
+
+    def getch(self):
+        self.arm()
+        ch = sys.stdin.read(1)[0]
+        self.disarm()
+        return ch
+
+
+def print_question(message: str) -> None:
+    print("\033[92m" + message + "\033[0m", flush=True)
+
+
+def ia_selection(question: str, options: list = None, flags: list = None) -> str:
+    print_question(question)
+    return _draw_ia_selection(options, flags)
+
+
+def _draw_ia_selection(options: list, flags: list = None):
+    __UNPOINTED = " "
+    __POINTED = ">"
+    __INDEX = 0
+    __LENGTH = len(options)
+    __ARROWS = __UP, _ = 65, 66
+    __ENTER = 10
+
+    if flags is None:
+        flags = []
+
+    def _choices_print():
+        for i, (option, flag) in enumerate(zip_longest(options, flags, fillvalue='')):
+            if i == __INDEX:
+                print(f" {__POINTED} {{0}}{option} {flag}{{1}}".format(
+                    '\033[94m', '\033[0m'))
+            else:
+                print(f" {__UNPOINTED} {option} {flag}")
+
+    def _choices_clear():
+        print(f"\033[{__LENGTH}A\033[J", end='')
+
+    def _move_pointer(ch_ord: int):
+        nonlocal __INDEX
+        __INDEX = max(
+            0, __INDEX - 1) if ch_ord == __UP else min(__INDEX + 1, __LENGTH - 1)
+
+    def _main_loop():
+        kg = KeyGetter()
+        _choices_print()
+        while True:
+            key = ord(kg.getch())
+            if key in __ARROWS:
+                _move_pointer(key)
+            _choices_clear()
+            _choices_print()
+            if key == __ENTER:
+                _choices_clear()
+                _choices_print()
+                break
+
+    _main_loop()
+    return options[__INDEX]
 
 
 def init(config_file):
@@ -22,6 +98,7 @@ def init(config_file):
             "api_version": api_version,
             "api_key": api_key
         }
+        os.system("mkdir -p "+os.getenv('HOME')+'/.config/chatgpt-py')
         with open(config_file, 'w') as f:
             f.write(json.dumps(config))
 
@@ -40,32 +117,41 @@ openai.api_version = config['api_version']
 openai.api_key = config['api_key']
 
 try:
-    chat_history = []
+    messages = []
+    character = ia_selection("Which AI character would you like to use?",
+                             options=["Linux Terminal", "Helpful Assistant"],
+                             flags=[f"~",
+                                    f"~"])
+    prompt = change_style(character)
     while (True):
         user_input = input(">> ")
-        response = openai.Completion.create(
+        messages.append(
+            {"role": "user", "content": prompt[1]+"user: "+user_input+" "+prompt[0]+": "})
+        response = openai.ChatCompletion.create(
             engine="my-gpt3-model",
-            prompt="I want you to act as a linux terminal.I will type commands and you will reply with what the terminal should show. I want you to only reply with the terminal output inside one unique code block, and nothing else. do not write explanations. do not type commands unless instruct you to do so. when I need to tell you something in english, i will do so by putting text inside curly brackets {like this}. my first command is pwd. Command: "+user_input+" \nYou: \n",
+            messages=messages,
             temperature=0.7,
             max_tokens=int(4e3),
             # top_p=1,
             # frequency_penalty=0,
             # presence_penalty=0,
-            stop=["Command: ", "You: ", "Task", "<|im_end|>"],
+            stop=["user: ", prompt[0]+": ", "Task: ", "<|im_end|>"],
             timeout=120,
             n=1
         )
-        message = response['choices'][0]['text']
-        if ";|im_end|&gt" in message:
-            message = message.replace("<|im_end|>", "")
-        message_html = markdown.markdown(message)
+        chat_response = response
+        answer = chat_response['choices'][0]['message']['content']
+        if ";|im_end|&gt" in answer:
+            answer = answer.replace("<|im_end|>", "")
+        answer_html = markdown.markdown(answer)
         # code_blocks = re.findall(
-        #     r"```[\w]*\n([\s\S]*?)```", message, re.DOTALL)
+        #     r"```[\w]*\n([\s\S]*?)```", answer, re.DOTALL)
         # for i in code_blocks:
         #     print(i)
-        # print(message)
-        soup = BeautifulSoup(message_html, 'html.parser')
-        print("AI: ")
-        print(html.unescape(soup.get_text()))
+        # print(answer)
+        soup = BeautifulSoup(answer_html, 'html.parser')
+        print(prompt[0]+f': \n{html.unescape(soup.get_text())}')
+        messages.append(
+            {"role": prompt[0], "content": html.unescape(soup.get_text())})
 except KeyboardInterrupt:
     sys.exit(0)
