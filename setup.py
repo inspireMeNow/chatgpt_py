@@ -8,5 +8,5 @@ setup(
             'chatgpt_cli=chatgpt_py.cli.chatgpt_cli:main',
         ],
     },
-    install_requires=['openai', 'itertools']
+    install_requires=['openai']
 )
