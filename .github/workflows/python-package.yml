@@ -13,8 +13,6 @@ on:
     tags:  
       - 'v*'
 
-permissions:
-  contents: read
 
 jobs:
   deploy:
