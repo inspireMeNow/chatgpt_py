@@ -1,5 +1,5 @@
 # OpenAI Python Cli Client
-**Warning: The OpenAI Service is not available int China Mainland (include HongKong), if you are in these aeras, beware of being banned by OpenAI.**
+**Warning: The OpenAI Service is not available in China Mainland (include HongKong), if you are in these aeras, beware of being banned by OpenAI.**
 ## Azure OpenAI Service
 ### Required Config File
 *The default config file is in $HOME/.config/chatgpt-py/config_azure.json, There is an example of config file.*
