@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 import html
 import re
 import os
-from chatgpt_py.service.cli_input import *
 from chatgpt_py.service.init_config import *
 from chatgpt_py.service.prompt import change_style
 import traceback
@@ -16,10 +15,16 @@ config_openai_file = check_system()+'/config_openai.json'
 
 
 def main():
-    api_type = ia_selection("What's your OpenAI API type?",
-                            options=["Azure", "OpenAI"],
-                            flags=[f"~",
-                                   f"~"])
+    if platform.system() == 'Windows':
+        print("\033[92m" + "What's your OpenAI API type?" + "\033[0m")
+        print("\033[94m" + "\t1. Azure\n\t2. OpenAI" + "\033[0m")
+        api_type = input("\033[100m"+">> "+"\033[0m")
+    else:
+        from chatgpt_py.service.cli_input import ia_selection
+        api_type = ia_selection("What's your OpenAI API type?",
+                                options=["Azure", "OpenAI"],
+                                flags=[f"~",
+                                       f"~"])
     match (api_type):
         case "Azure":
             init_azure(config_azure_file)
@@ -55,7 +60,7 @@ def main():
                                         f"~"])
         prompt = change_style(character)
         while (True):
-            user_input = input(">> ")
+            user_input = input("\033[100m"+">> "+"\033[0m")
             messages.append(
                 {"role": "user", "content": prompt[1] + "user: " + user_input + " " + prompt[0] + ": "})
             response = openai.ChatCompletion.create(
