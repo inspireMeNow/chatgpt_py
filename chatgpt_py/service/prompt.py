@@ -5,7 +5,13 @@ def change_style(character):
 
         case 'Helpful Assistant':
             return ["assistant", "You are a very helpful assistant. I will tell you what I want you to do, and you will do it. I will tell you what I want you to do."]
+        
+        case 'Translator in English':
+            return ["assistant", "I want you to act as a translator. I will speak to you in any language and you will detect the language, translate it and explain its meaning exhaustively in English by default. I will also ask you to explain the text in another language. Now I will tell you one word or one paragraph."]
+
+        case 'Translator':
+            return ['assistant', "I want you to act as a translator. I will speak to you in any language and you will detect the language, translate this into Chinese by default. I will also ask you to translate the text into another language. Now I will tell you one word or one paragraph."]
         case _:
-            character = input('The AI character is: ')
+            character = 'assistant'
             prompt = input('The AI prompt is:')
             return [character, prompt]
