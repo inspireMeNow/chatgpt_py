@@ -18,7 +18,16 @@ def main():
     if platform.system() == 'Windows':
         print("\033[92m" + "What's your OpenAI API type?" + "\033[0m")
         print("\033[94m" + "\t1. Azure\n\t2. OpenAI" + "\033[0m")
-        api_type = input("\033[100m"+">> "+"\033[0m")
+        number = input("\033[100m"+">> "+"\033[0m")
+        while (True):
+            match(number):
+                case "1":
+                    api_type = "Azure"
+                case "2":
+                    api_type = "OpenAI"
+                case _:
+                    print("Invalid input, please try again.")
+                    number = input("\033[100m"+">> "+"\033[0m")
     else:
         from chatgpt_py.service.cli_input import ia_selection
         api_type = ia_selection("What's your OpenAI API type?",
