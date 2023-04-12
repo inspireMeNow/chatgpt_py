@@ -8,6 +8,8 @@ import re
 import os
 from chatgpt_py.service.init_config import *
 from chatgpt_py.service.prompt import change_style
+import requests
+
 
 config_azure_file = check_system() + "/config_azure.json"
 config_openai_file = check_system() + '/config_openai.json'
@@ -60,6 +62,22 @@ def select_prompt():
     return character
 
 
+def detect_ip():
+    try:
+        url = "https://chat.openai.com/"
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(url, headers=headers, timeout=10)
+        print(response.text)
+        if 'text/plain' in response.headers.get('content-type'):
+            print("\033[91m{}\033[00m" .format(
+                'The OpenAI Service is not available in your region. Please try again later.'))
+            sys.exit(0)
+    except Exception as e:
+        print("\033[91m{}\033[00m" .format(
+            'Connection error, please check your network connection and try again.'))
+        sys.exit(0)
+
+
 def main():
     if platform.system() == 'Windows':
         print("\033[92m" + "What's your OpenAI API type?" + "\033[0m")
@@ -96,6 +114,7 @@ def main():
             openai.api_version = config['api_version']
             openai.api_key = config['api_key']
         case "OpenAI":
+            detect_ip()
             init_openai(config_openai_file)
             with open(config_openai_file, 'r') as f:
                 try:
